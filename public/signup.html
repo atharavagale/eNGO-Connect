@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="signup.css"/>
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
+    <title>Sign-up Page</title>
+</head>
+<body style="background-color: #088F8F;">
+<div class="container">
+    <div class="box">
+        <div class="box-login" id="signup">
+            <div class="top-header">
+                <h3>enGEO</h3>
+                <small>We are happy to have you!</small>
+            </div>
+            <form class="input-group" id="form" onsubmit="signup(event)">
+                <div class="input-field">
+                    <input type="text" class="input-box" id="logname" required/>
+                    <label for="logname">Username</label>
+                </div>
+                <div class="input-field">
+                    <input type="email" class="input-box" id="logEmail" required/>
+                    <label for="logEmail">Email address</label>
+                </div>
+                <div class="input-field">
+                    <input type="password" class="input-box" id="logPassword" required/>
+                    <label for="logPassword">Password</label>
+                    <div class="eye-area">
+                        <div class="eye-box" onclick="togglePasswordVisibility('logPassword', 'eye', 'eye-slash')">
+                            <i class="fa-regular fa-eye" id="eye" style="display: none;"></i>
+                            <i class="fa-regular fa-eye-slash" id="eye-slash" style="display: block;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-field">
+                    <input type="password" class="input-box" id="logPasswordcheck" required/>
+                    <label for="logPasswordcheck">Confirm Password</label>
+                    <div class="eye-area">
+                        <div class="eye-box" onclick="togglePasswordVisibility('logPasswordcheck', 'eye2', 'eye-slash2')">
+                            <i class="fa-regular fa-eye" id="eye2" style="display: none;"></i>
+                            <i class="fa-regular fa-eye-slash" id="eye-slash2" style="display: block;"></i>
+                        </div>
+                    </div>
+                    <div id="passwordError" class="error-message"></div>
+                </div>
+                <div class="remember">
+                    <input type="checkbox" id="formCheck" class="check"/>
+                    <label for="formCheck">Remember Me</label>
+                </div>
+                <div class="input-field">
+                    <input type="submit" class="input-submit" value="SignUp"/>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    function signup(event) {
+        event.preventDefault();
+        var username = document.getElementById("logname").value;
+        var email = document.getElementById("logEmail").value;
+        var password = document.getElementById("logPassword").value;
+        var confirmPassword = document.getElementById("logPasswordcheck").value;
+        var passwordError = document.getElementById("passwordError");
+
+        if (password !== confirmPassword) {
+            passwordError.innerText = "Passwords do not match";
+            return;
+        } else {
+            passwordError.innerText = ""; // Clear error message if passwords match
+
+            // Perform the fetch to the backend
+            fetch('/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password,
+                }),
+            })
+            .then(response => {
+                if (response.ok) { // Check if HTTP status code is 200-299
+                    return response.json();
+                } else {
+                    return response.json().then(data => {
+                        throw new Error(data.message || 'Failed to register');
+                    });
+                }
+            })
+            .then(data => {
+                alert('Registration successful!');
+                window.location.href = '/login.html'; // Redirect on successful registration
+            })
+            .catch(error => {
+                console.log('Error:', error);
+                passwordError.innerText = error.message || 'Failed to register. Please try again later.';
+            });
+        }
+    }
+
+    function togglePasswordVisibility(passwordFieldId, eyeId, eyeSlashId) {
+        var passwordInput = document.getElementById(passwordFieldId);
+        var eyeIcon = document.getElementById(eyeId);
+        var eyeSlashIcon = document.getElementById(eyeSlashId);
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            eyeIcon.style.display = 'block';
+            eyeSlashIcon.style.display = 'none';
+        } else {
+            passwordInput.type = 'password';
+            eyeIcon.style.display = 'none';
+            eyeSlashIcon.style.display = 'block';
+        }
+    }
+</script>
+</body>
+</html>

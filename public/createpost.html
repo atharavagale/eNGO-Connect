@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>enGEO: Empowering Change</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: "Poppins", sans-serif;
+            font-weight: 600;
+            font-style: normal;
+        }
+
+        body {
+            font-family: sans-serif;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        header {
+            background-color: rgba(55, 81, 126, 0.8);
+            color: #333;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            font-size: 3em;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: white;
+        }
+
+        main {
+            padding: 50px;
+        }
+
+        .button {
+            background-color: #94C7B1;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .input {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .input button img {
+            height: 20px;
+            width: 20px;
+        }
+
+        .posts-container {
+            margin-top: 20px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .post {
+            padding: 15px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .post img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .post-user {
+            font-size: 0.8em;
+            color: #778899;
+            font-weight: bold;
+        }
+
+        .post-content {
+            font-size: 1em;
+        }
+
+        
+           
+        .post-image {
+                max-width: 100%;
+                max-height: 200px; 
+                width: auto; 
+                height: auto; 
+                border-radius: 5px;
+            
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>enGEO</h1>
+        <h2>Connecting individuals and causes for positive impact</h2>
+    </header>
+
+    <main>
+
+        <section class="create-post">
+            <h2>Create a Post</h2>
+            <div class="post-section">
+                <div class="input" style="margin: 0px 250px; width: 600px; padding: 30px; border: 1px solid gray; border-radius: 40px;">
+                    <textarea id="post-content" style="width: 600px; padding: 15px; border: none;" placeholder="Share your thoughts, updates, or questions"></textarea>
+                    <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="handleFileUpload(this)">
+                    <button id="selectButton" onclick="document.getElementById('fileInput').click();" style="width: 70px; height: 70px; border: none; background-color: #94C7B1; border-radius: 10px;"><img src="upload.svg" alt=""></button>
+                </div>
+                <button id="post-button" class="button" style="margin: 10px 530px;">Create Post</button>
+            </div>
+        </section>
+
+        <section class="posts-section">
+            <h2>Recent Posts</h2>
+            <div class="posts-container"></div>
+            <button id="clear-button" class="button" style="margin: 10px 530px;">Clear Posts</button>
+        </section>
+
+    </main>
+
+    <footer style="height: 80px; width: 100%; background-color: rgba(55, 81, 126, 0.8) ">
+        <p style="text-align: center; color: white; padding: 30px;">&copy; 2024 enGEO. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function handleFileUpload(input) {
+            console.log("File selected");
+            const file = input.files[0];
+            if (file) {
+                console.log("File read:", file.name);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    console.log("Image URL:", imageUrl);
+                    const imageElement = document.createElement('img');
+                    imageElement.src = imageUrl;
+                    imageElement.classList.add('post-image');
+                    // Remove previous image if exists
+                    const postSection = document.querySelector('.post-section');
+                    const existingImage = postSection.querySelector('.post-image');
+                    if (existingImage) {
+                        postSection.removeChild(existingImage);
+                    }
+                    // Append the new image element to the post section
+                    postSection.appendChild(imageElement);
+                }
+                reader.readAsDataURL(file);
+            } else {
+                console.log("No file selected");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const postButton = document.getElementById('post-button');
+            const postsContainer = document.querySelector('.posts-container');
+
+            postButton.addEventListener('click', () => {
+                const postContent = document.getElementById('post-content').value;
+                const fileInput = document.getElementById('fileInput');
+                const imageFile = fileInput.files[0];
+
+                const formData = new FormData();
+                formData.append('content', postContent);
+                formData.append('image', imageFile);
+
+                axios.post('http://localhost:5000/posts', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    })
+                    .then(response => {
+                        console.log(response.data);
+                        fetchPosts();
+                    })
+                    .catch(error => console.error('Error creating post:', error));
+            });
+
+            const clearButton = document.getElementById('clear-button');
+            clearButton.addEventListener('click', () => {
+                postsContainer.innerHTML = '';
+            });
+
+            function fetchPosts() {
+                axios.get('http://localhost:5000/posts')
+                    .then(response => {
+                        postsContainer.innerHTML = ''; // Clear existing posts
+                        response.data.forEach(post => createPostElement(post));
+                    })
+                    .catch(error => console.error('Error fetching posts:', error));
+            }
+
+            function createPostElement(post) {
+                const newPost = document.createElement('div');
+                newPost.classList.add('post');
+
+                const postUser = document.createElement('p');
+                postUser.classList.add('post-user');
+                postUser.textContent = 'Username'; // You can replace 'Username' with actual username
+
+                const postContentElement = document.createElement('p');
+                postContentElement.classList.add('post-content');
+                postContentElement.textContent = post.content;
+
+                newPost.appendChild(postUser);
+                newPost.appendChild(postContentElement);
+
+                if (post.imageUrl) {
+                    const imageElement = document.createElement('img');
+                    imageElement.src = post.imageUrl;
+                    imageElement.classList.add('post-image');
+                    newPost.appendChild(imageElement);
+                }
+
+                postsContainer.appendChild(newPost);
+            }
+
+            fetchPosts();
+        });
+
+    </script>
+</body>
+
+</html>
