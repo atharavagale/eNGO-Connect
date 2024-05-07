@@ -22,10 +22,10 @@ mongoose.connect('mongodb://localhost:27017/engeo', {
 // Multer storage configuration
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, path.join(__dirname, 'public', 'uploads')); // Save uploaded files to 'public/uploads' directory
+        cb(null, path.join(__dirname, 'public', 'uploads')); 
     },
     filename: function(req, file, cb) {
-        cb(null, file.originalname); // Use original file name as the filename
+        cb(null, file.originalname); 
     }
 });
 const upload = multer({ storage: storage });
